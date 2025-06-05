@@ -14,6 +14,7 @@ dependencies = [
     "langchain-community",
     "langchain-openai",
     "pre-commit>=4.2.0",
+    "pytest-cov>=6.1.1",
 ]
 
 [dependency-groups]
