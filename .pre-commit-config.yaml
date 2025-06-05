@@ -18,7 +18,7 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: uv run --frozen pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=app tests/ | tee pytest-coverage.txt
+        entry: bash scripts/run_tests.sh
         language: system
         types: [python]
 

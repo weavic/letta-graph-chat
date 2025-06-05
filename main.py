@@ -1,7 +1,8 @@
-# main.py (Flask version)
-# app.py (Streamlit version)
 import streamlit as st
 from memory_adapter import MemoryAdapter
+from langchain.agents import Tool
+from langchain.agents import initialize_agent
+from langchain_community.chat_models import ChatOpenAI
 
 
 print("Hello from memory-adaptor-demo!")
@@ -23,17 +24,11 @@ for msg in history:
     st.write(msg)
 
 # dummy tool for agent initialization
-from langchain.agents import Tool
 
 
 def dummy_tool(input_text: str) -> str:
     return f"(dummy tool response to '{input_text}')"
 
-
-# main.py (Flask version)
-from langchain.agents import initialize_agent
-from langchain_community.chat_models import ChatOpenAI
-from memory_adapter import MemoryAdapter
 
 tools = [
     Tool(
