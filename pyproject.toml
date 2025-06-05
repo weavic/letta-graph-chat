@@ -17,6 +17,7 @@ dependencies = [
     "watchdog>=6.0.0",
     "chromadb>=1.0.12",
     "langchain-community>=0.3.24",
+    "langgraph>=0.4.8",
 ]
 
 [dependency-groups]
