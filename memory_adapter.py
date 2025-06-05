@@ -13,6 +13,7 @@ class ChromaMemoryAdapter(BaseMemory):
 
     _embeddings: OpenAIEmbeddings = PrivateAttr()
     _vectorstore: Chroma = PrivateAttr()
+    _summry_store: Chroma = PrivateAttr()
 
     def __init__(self, session_id: str = "default", **kwargs):
         super().__init__(**kwargs)
@@ -20,6 +21,10 @@ class ChromaMemoryAdapter(BaseMemory):
         self._embeddings = OpenAIEmbeddings()
         self._vectorstore = Chroma(
             collection_name=self.collection_name,
+            embedding_function=self._embeddings,
+        )
+        self._summary_store = Chroma(
+            collection_name="summary_memory",
             embedding_function=self._embeddings,
         )
 
@@ -58,6 +63,10 @@ class ChromaMemoryAdapter(BaseMemory):
     def clear(self) -> None:
         self._vectorstore.delete_collection()
         # TODO: セッションID単位で履歴を削除できるようにするとなお良い
+
+    def get_all_history(self) -> str:
+        docs = self._vectorstore.similarity_search("", k=1000)  # query なしで全部
+        return "\n".join(doc.page_content for doc in docs)
 
     def summarize_session(self):
         """
