@@ -1,5 +1,4 @@
 # memory_adapter.py
-# memory_adapter.py
 from langchain_core.memory import BaseMemory
 from typing import Dict, List, Any
 from pydantic import Field
@@ -29,23 +28,3 @@ class MemoryAdapter(BaseMemory):
 
     def clear(self) -> None:
         self.store.clear()
-
-
-# # memory_adapter.py
-# from typing import List, Dict
-
-
-# class MemoryAdapter:
-#     def __init__(self):
-#         self.store: Dict[str, List[str]] = {}  # Simple in-memory store
-
-#     def save(self, session_id: str, message: str):
-#         if session_id not in self.store:
-#             self.store[session_id] = []
-#         self.store[session_id].append(message)
-
-#     def retrieve(self, session_id: str) -> List[str]:
-#         return self.store.get(session_id, [])
-
-#     def clear(self, session_id: str):
-#         self.store.pop(session_id, None)
