@@ -36,14 +36,19 @@ def main():
 
     history = memory.retrieve(session_id)
     st.write("## Conversation History")
-    for msg in history:
-        st.write(msg)
+    if st.button("💾 Summarize session history"):
+        memory.summarize_session()
+        st.success("Summary added to memory!")
 
-    response = graph_app.invoke({"input": user_input})
-    st.write("## Agent Response")
-    st.write(response["output"])
-    print("Agent Response:", response["output"])
-    # Save the context to memory
+    for msg in history:
+        st.write(f"History: {msg}")
+
+    if not user_input:
+        response = graph_app.invoke({"input": user_input})
+        st.write("## Agent Response")
+        st.write(response["output"])
+        print("Agent Response:", response["output"])
+        # Save the context to memory
 
 
 if __name__ == "__main__":

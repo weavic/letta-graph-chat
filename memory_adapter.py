@@ -59,6 +59,27 @@ class ChromaMemoryAdapter(BaseMemory):
         self._vectorstore.delete_collection()
         # TODO: セッションID単位で履歴を削除できるようにするとなお良い
 
+    def summarize_session(self):
+        """
+        現在の session_id に紐づく履歴を集めて、まとめて１つの要約として保存
+        """
+        docs = self._vectorstore.similarity_search(
+            query="summary",
+            k=20,
+            filter={"session_id": self.session_id},
+        )
+        full_text = "\n".join(doc.page_content for doc in docs)
+
+        # TODO 仮実装。あとでLLMを使って要約するようにする
+        summary = f"[SUMMARY SNAPSHOT]\n{full_text:300}..."
+        print(f"Generated summary: {summary}")  # TODO : remove print in production
+
+        # 古い履歴を削除（今は未実装。あとでTTL設計と統合
+        self._vectorstore.add_texts(
+            texts=[summary],
+            metadatas=[{"session_id": self.session_id, "type": "summary"}],
+        )
+
 
 class InMemoryAdapter(BaseMemory, BaseMemoryAdapter):
     store: Dict[str, List[str]] = Field(default_factory=dict)

@@ -124,11 +124,3 @@ uv streamlit run main.py
 ```bash
  uv run pre-commit run --all-files
 ```
-
-## TODO
-
-次のステップ
-
-### 2. PineconeやChromaと差し替えるためのAdapterクラス設計に拡張
-
-### 3. Session単位のTTLや削除設計を追加してセッション管理強化
