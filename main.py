@@ -1,9 +1,15 @@
 import streamlit as st
-from memory_adapter import MemoryAdapter
+
+# from memory_adapter import MemoryAdapter
+from memory_adapter import InMemoryAdapter
+
+# from memory_adapter.chroma import ChromaMemoryAdapter
+# from memory_adapter.pinecone import PineconeMemoryAdapter
 from langchain.agents import Tool, initialize_agent
 from langchain_community.chat_models import ChatOpenAI
 
-memory = MemoryAdapter()
+memory = InMemoryAdapter()
+# memory = ChromaMemoryAdapter()
 
 st.title("🧠 Memory Chat UI")
 
@@ -40,6 +46,7 @@ tools = [
 agent = initialize_agent(
     tools=tools,
     llm=ChatOpenAI(),
-    memory=MemoryAdapter(),
+    # memory=MemoryAdapter(),
+    memory=memory,
     agent_type="chat-zero-shot-react-description",
 )
