@@ -1,5 +1,5 @@
 # api_server.py (FastAPI version)
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from pydantic import BaseModel
 from memory_adapter import MemoryAdapter
 

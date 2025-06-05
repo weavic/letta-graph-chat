@@ -1,17 +1,52 @@
+## 環境設定手順
 
-uv init memory-adaptor-demo 
+## 初回
 
-pyproject.toml 記載
+```bash
+uv init memory-adaptor-demo
+```
+
+## 開発環境要Package
+
+```bash
+uv add "black" "ruff" "pytest" "anyio" "mypy" "coverage" --dev
+```
+
+## Package
+
+```bash
+uv add "fastapi", "uvicorn", "pydantic", "streamlit", "langchain", "langchain-core", "langchain-community", "langchain-openai",
+```
+
+
+例：pyproject.tomlに下記のように記載される
 
 ```toml
 dependencies = [
     "fastapi",
     "uvicorn",
     "pydantic",
-    "streamlit"
+    "streamlit",
+    "langchain",
+    "langchain-core",
+    "langchain-community",
+    "langchain-openai",
 ]
+
+[dependency-groups]
+dev = [
+    "anyio>=4.9.0",
+    "black>=25.1.0",
+    "coverage>=7.8.2",
+    "mypy>=1.16.0",
+    "pre-commit>=4.2.0",
+    "pytest>=8.4.0",
+    "ruff>=0.11.12",
+]
+
 ```
 
+package をもしマニュアルでいじったら uv sync
 ```bash
 uv sync
 Using CPython 3.12.9
@@ -67,17 +102,35 @@ Installed 46 packages in 100ms
  + uvicorn==0.34.3
 ```
 
+### ターミナルで開発環境に入る場合
+
 以下は任意
-```
+
+```bash
+uv venv
 . .venv/bin/activate.fish  
 ```
 
-```
+## 実行方法
+
+```bash
 uv streamlit run main.py   
 ```
 
-次のステップ
-	1.	LangChain Agentと統合してMemoryとして使う（既存のLLM構成にHook）
-	2.	PineconeやChromaと差し替えるためのAdapterクラス設計に拡張
-	3.	Session単位のTTLや削除設計を追加してセッション管理強化
+## pre-commit の初回実行
 
+.pre-commit-config.yaml を変更したら要チェック
+
+```bash
+ uv run pre-commit run --all-files
+```
+
+## TODO
+
+次のステップ
+
+### 1. LangChain Agentと統合してMemoryとして使う（既存のLLM構成にHook
+
+### 2. PineconeやChromaと差し替えるためのAdapterクラス設計に拡張
+
+### 3. Session単位のTTLや削除設計を追加してセッション管理強化
