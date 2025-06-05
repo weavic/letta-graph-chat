@@ -4,9 +4,13 @@ from langchain.agents import Tool, initialize_agent
 from langchain_community.chat_models import ChatOpenAI
 
 memory = MemoryAdapter()
-session_id = "demo-session"
 
-st.title("🧠 Simple Memory Chat UI")
+st.title("🧠 Memory Chat UI")
+
+session_id = st.selectbox(
+    "Select or create a session", options=["demo-session", "user-a", "user-b"], index=0
+)
+
 user_input = st.text_input("Your message")
 
 if user_input:

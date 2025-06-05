@@ -129,8 +129,6 @@ uv streamlit run main.py
 
 次のステップ
 
-### 1. LangChain Agentと統合してMemoryとして使う（既存のLLM構成にHook
-
 ### 2. PineconeやChromaと差し替えるためのAdapterクラス設計に拡張
 
 ### 3. Session単位のTTLや削除設計を追加してセッション管理強化
