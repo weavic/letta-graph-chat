@@ -13,7 +13,7 @@ class ChromaMemoryAdapter(BaseMemory):
 
     _embeddings: OpenAIEmbeddings = PrivateAttr()
     _vectorstore: Chroma = PrivateAttr()
-    _summry_store: Chroma = PrivateAttr()
+    _summary_store: Chroma = PrivateAttr()
 
     def __init__(self, session_id: str = "default", **kwargs):
         super().__init__(**kwargs)
