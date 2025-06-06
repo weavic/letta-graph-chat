@@ -3,7 +3,7 @@ from typing import Dict, List, Any
 from pydantic import Field, PrivateAttr
 from base_memory_adapter import BaseMemoryAdapter
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 
 
 class ChromaMemoryAdapter(BaseMemory):
@@ -68,26 +68,26 @@ class ChromaMemoryAdapter(BaseMemory):
         docs = self._vectorstore.similarity_search("", k=1000)  # query なしで全部
         return "\n".join(doc.page_content for doc in docs)
 
-    def summarize_session(self):
-        """
-        現在の session_id に紐づく履歴を集めて、まとめて１つの要約として保存
-        """
-        docs = self._vectorstore.similarity_search(
-            query="summary",
-            k=20,
-            filter={"session_id": self.session_id},
-        )
-        full_text = "\n".join(doc.page_content for doc in docs)
+    # def summarize_session(self):
+    #     """
+    #     現在の session_id に紐づく履歴を集めて、まとめて１つの要約として保存
+    #     """
+    #     docs = self._vectorstore.similarity_search(
+    #         query="summary",
+    #         k=20,
+    #         filter={"session_id": self.session_id},
+    #     )
+    #     full_text = "\n".join(doc.page_content for doc in docs)
 
-        # TODO 仮実装。あとでLLMを使って要約するようにする
-        summary = f"[SUMMARY SNAPSHOT]\n{full_text:300}..."
-        print(f"Generated summary: {summary}")  # TODO : remove print in production
+    #     # TODO 仮実装。あとでLLMを使って要約するようにする
+    #     summary = f"[SUMMARY SNAPSHOT]\n{full_text:300}..."
+    #     print(f"Generated summary: {summary}")  # TODO : remove print in production
 
-        # 古い履歴を削除（今は未実装。あとでTTL設計と統合
-        self._vectorstore.add_texts(
-            texts=[summary],
-            metadatas=[{"session_id": self.session_id, "type": "summary"}],
-        )
+    #     # 古い履歴を削除（今は未実装。あとでTTL設計と統合
+    #     self._vectorstore.add_texts(
+    #         texts=[summary],
+    #         metadatas=[{"session_id": self.session_id, "type": "summary"}],
+    #     )
 
 
 class InMemoryAdapter(BaseMemory, BaseMemoryAdapter):
