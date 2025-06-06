@@ -1,5 +1,6 @@
 import streamlit as st
-from langchain.agents import Tool, initialize_agent
+from langgraph.prebuilt import create_react_agent
+from langchain.agents import Tool
 from langchain_openai import ChatOpenAI
 from langgraph_demo import (
     build_graph,
@@ -60,14 +61,11 @@ def main():
 
 
 if __name__ == "__main__":
-    agent = initialize_agent(
+    agent = create_react_agent(
+        model=ChatOpenAI(temperature=0),
         tools=[Tool(name="DummyTool", func=dummy_tool, description="A dummy tool")],
-        llm=ChatOpenAI(),
-        agent_type="zero-shot-react-description",
-        verbose=True,
-        handle_parsing_errors=True,
+        prompt="You are a helpful assistant.",
     )
-
     graph_app = build_graph(
         agent=agent,
         memory=ChromaMemoryAdapter(session_id=selected_session_id),

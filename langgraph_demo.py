@@ -7,7 +7,7 @@ from typing import TypedDict
 from memory_adapter import ChromaMemoryAdapter
 
 # LangChain agent & tools
-from langchain.agents import AgentExecutor
+# from langchain.agents import AgentExecutor
 
 
 # define the state of the agent
@@ -60,7 +60,7 @@ def decide_node(state: AgentState) -> AgentState:
 def summarize_session(state: AgentState, agent, memory) -> AgentState:
     prompt = f"以下の会話履歴を要約してください(ポイント形式で):\n{state['history']}"  # TODO: prompt message in Japanese
     response = agent.invoke({"input": prompt})
-    summary = response["output"]
+    summary = response["messages"][-1].content
 
     memory._summary_store.add_texts(
         [summary],
@@ -74,9 +74,9 @@ def summarize_session(state: AgentState, agent, memory) -> AgentState:
 # Run agent
 def run_agent_node(state: AgentState, agent) -> AgentState:
     agent_input = f"{state['summary']}\n{state['history']}"
-    print("LLM Input:\n", agent_input)
     response = agent.invoke({"input": agent_input})
-    return {**state, "output": response["output"], "prompt": agent_input}
+    output_text = response["messages"][-1].content
+    return {**state, "output": output_text, "prompt": agent_input}
 
 
 # Save memory
@@ -86,7 +86,7 @@ def save_memory_node(state: AgentState, memory) -> AgentState:
 
 
 # Build the state graph for the agent
-def build_graph(agent: AgentExecutor, memory: ChromaMemoryAdapter) -> CompiledGraph:
+def build_graph(agent: CompiledGraph, memory: ChromaMemoryAdapter) -> CompiledGraph:
     builder = StateGraph(AgentState)
     builder.add_node("summary_load", partial(summary_load_node, memory=memory))
     builder.add_node("load_memory", partial(load_memory_node, memory=memory))
