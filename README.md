@@ -85,10 +85,9 @@ Tool: Famous tourist spots in Tokyo include Asakusa, Tokyo Tower, and Shibuya Cr
 - Streamlit  
 - Chroma (for vector memory)
 
-## 📹 Optional
+## 🎬 Demo
 
-A demo GIF showing the interaction flow is available.
-TODO:
+![Letta-style Memory Chat Demo](letta-graph-chat-demo.gif)
 
 ## Architecture
 
@@ -105,7 +104,7 @@ flowchart TD
     F --> G
 ```
 
-## Disclaimer:
+## Disclaimer
 
 This project is provided as a proof of concept (PoC) for demonstration purposes only.
 Use at your own risk. No warranty or support is provided for production use.

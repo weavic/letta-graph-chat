@@ -5,6 +5,7 @@ from base_memory_adapter import BaseMemoryAdapter
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
 from datetime import datetime
+from typing import Optional
 
 
 class ChromaMemoryAdapter(BaseMemory):
@@ -74,21 +75,31 @@ class ChromaMemoryAdapter(BaseMemory):
     ) -> None:
         user_input = inputs.get("input", "")
         ai_output = outputs.get("output", "")
+
+        if isinstance(user_input, dict):
+            user_input = user_input.get("input", "")
+        if isinstance(ai_output, dict):
+            ai_output = ai_output.get("output", "")
+
+        if user_input:
+            self._vectorstore.add_texts(
+                [f"User: {user_input}"], metadatas=[{"session_id": self.session_id}]
+            )
         if ai_output:
-            content = f"User: {user_input}\nAI: {ai_output}"
-        else:
-            content = f"User: {user_input}"
-        self._vectorstore.add_texts(
-            texts=[content],
-            metadatas=[
-                {"session_id": self.session_id, "timestamp": datetime.now().isoformat()}
-            ],
-        )
+            self._vectorstore.add_texts(
+                [f"AI: {ai_output}"], metadatas=[{"session_id": self.session_id}]
+            )
+
+    def save_turn(
+        self, user_input: Optional[str] = None, ai_output: Optional[str] = None
+    ):
+        self.save_context({"input": user_input or ""}, {"output": ai_output or ""})
 
     def maybe_generate_summary(self, agent=None):
         history = self.get_all_history()
-        if len(history) >= 3:
-            prompt = self._build_summary_prompt(history)
+        filtered_history = [h for h in history if h.startswith("User:")]
+        if len(filtered_history) >= 3:
+            prompt = self._build_summary_prompt(filtered_history)
             if agent:
                 response = agent.invoke({"input": prompt})
                 summary = response["messages"][-1].content
