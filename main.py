@@ -46,12 +46,6 @@ def main(graph_app=None, agent=None):
     )
     memory = ChromaMemoryAdapter(session_id=selected_session_id)
     user_input = st.text_input("Your message")
-    if user_input:
-        if "要約" not in user_input and "summarize" not in user_input.lower():
-            memory.save_context({"input": user_input})
-
-    # Auto Summarize checkbox
-    auto_summary = st.sidebar.checkbox("Auto Summarize", value=False)
 
     # Showing internal state for demo purposes
     # short-term memory display
@@ -64,9 +58,12 @@ def main(graph_app=None, agent=None):
     st.sidebar.subheader("Long-term Memory")
     summary = memory.long_term_memory
     if summary.strip():
-        st.sidebar.text_area("Summary", value=summary, height=100)
+        st.sidebar.text_area("Summary", value=summary, height=120)
     else:
         st.sidebar.write("No summary yet.")
+
+    # Auto Summarize checkbox
+    auto_summary = st.sidebar.checkbox("Auto Summarize", value=False)
 
     st.write("## Conversation History")
 

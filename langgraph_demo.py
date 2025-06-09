@@ -81,7 +81,7 @@ def run_agent_node(state: AgentState, agent) -> AgentState:
 
 # Save memory
 def save_memory_node(state: AgentState, memory) -> AgentState:
-    memory.save_context({"input": state["input"]}, {"output": state["output"]})
+    memory.save_turn({"input": state["input"]}, {"output": state["output"]})
     return state
 
 
