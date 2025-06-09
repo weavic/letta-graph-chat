@@ -50,9 +50,6 @@ def main(graph_app=None, agent=None):
         if "要約" not in user_input and "summarize" not in user_input.lower():
             memory.save_context({"input": user_input})
 
-    # Auto Summarize checkbox
-    auto_summary = st.sidebar.checkbox("Auto Summarize", value=False)
-
     # Showing internal state for demo purposes
     # short-term memory display
     st.sidebar.subheader("Short-term Memory")
@@ -67,6 +64,9 @@ def main(graph_app=None, agent=None):
         st.sidebar.text_area("Summary", value=summary, height=100)
     else:
         st.sidebar.write("No summary yet.")
+
+    # Auto Summarize checkbox
+    auto_summary = st.sidebar.checkbox("Auto Summarize", value=False)
 
     st.write("## Conversation History")
 

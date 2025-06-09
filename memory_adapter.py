@@ -41,7 +41,7 @@ class ChromaMemoryAdapter(BaseMemory):
         )
         if not docs:
             return []
-        docs_sorted = sorted(docs, key=lambda x: x.metadata.get("timestamp", 0))
+        docs_sorted = sorted(docs, key=lambda d: d.metadata.get("timestamp", 0))
         short_terms = []
         for doc in docs_sorted:
             lines = doc.page_content.split("\n")
@@ -58,8 +58,9 @@ class ChromaMemoryAdapter(BaseMemory):
         )
         if not docs:
             return ""
-        docs_sorted = sorted(docs, key=lambda d: d.metadata.get("timestamp", ""))
-        return docs_sorted[-1].page_content
+        docs_sorted = sorted(docs, key=lambda d: d.metadata.get("timestamp", 0))
+        latest_summary = docs_sorted[-1].page_content if docs_sorted else ""
+        return latest_summary.strip()
 
     def load_memory_variables(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         query = inputs.get("input", "")
