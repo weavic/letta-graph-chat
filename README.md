@@ -108,3 +108,7 @@ flowchart TD
 
 This project is provided as a proof of concept (PoC) for demonstration purposes only.
 Use at your own risk. No warranty or support is provided for production use.
+
+## 📄 License
+
+MIT
