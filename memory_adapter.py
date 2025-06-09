@@ -4,6 +4,7 @@ from pydantic import Field, PrivateAttr
 from base_memory_adapter import BaseMemoryAdapter
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
+from datetime import datetime
 
 
 class ChromaMemoryAdapter(BaseMemory):
@@ -32,6 +33,34 @@ class ChromaMemoryAdapter(BaseMemory):
     def memory_variables(self) -> List[str]:
         return ["history"]
 
+    @property
+    def short_term_memory(self, k=3) -> List[str]:
+        """Short-term memory: Latest n history (e.g. 3 messages)"""
+        docs = self._vectorstore.similarity_search(
+            "", k=k, filter={"session_id": self.session_id}
+        )
+        if not docs:
+            return []
+        docs_sorted = sorted(docs, key=lambda x: x.metadata.get("timestamp", 0))
+        short_terms = []
+        for doc in docs_sorted:
+            lines = doc.page_content.split("\n")
+            for line in lines:
+                if line.strip():
+                    short_terms.append(line)
+        return short_terms[-k * 2 :]
+
+    @property
+    def long_term_memory(self) -> str:
+        """Long-term memory: a latest summary of history in the summary store"""
+        docs = self._summary_store.similarity_search(
+            query="", k=100, filter={"session_id": self.session_id}
+        )
+        if not docs:
+            return ""
+        docs_sorted = sorted(docs, key=lambda d: d.metadata.get("timestamp", ""))
+        return docs_sorted[-1].page_content
+
     def load_memory_variables(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         query = inputs.get("input", "")
         docs = self._vectorstore.similarity_search(
@@ -39,22 +68,52 @@ class ChromaMemoryAdapter(BaseMemory):
         )
         return {"history": "\n".join(doc.page_content for doc in docs)}
 
-    def save_context(self, inputs: Dict[str, Any], outputs: Dict[str, Any]) -> None:
+    def save_context(
+        self, inputs: Dict[str, Any], outputs: Dict[str, Any] = {}
+    ) -> None:
         user_input = inputs.get("input", "")
         ai_output = outputs.get("output", "")
-        content = f"User: {user_input}\nAI: {ai_output}"
+        if ai_output:
+            content = f"User: {user_input}\nAI: {ai_output}"
+        else:
+            content = f"User: {user_input}"
         self._vectorstore.add_texts(
-            texts=[content], metadatas=[{"session_id": self.session_id}]
+            texts=[content],
+            metadatas=[
+                {"session_id": self.session_id, "timestamp": datetime.now().isoformat()}
+            ],
         )
 
-    def save(self, session_id: str, message: str):
-        """明示的に履歴だけを保存（ユーティリティ用途）"""
-        self._vectorstore.add_texts([message], metadatas=[{"session_id": session_id}])
+    def maybe_generate_summary(self, agent=None):
+        history = self.get_all_history()
+        if len(history) >= 3:
+            prompt = self._build_summary_prompt(history)
+            if agent:
+                response = agent.invoke({"input": prompt})
+                summary = response["messages"][-1].content
+            else:
+                response = self.llm.invoke(prompt)
+                summary = response.content if hasattr(response, "content") else response
+
+            self._summary_store.add_texts(
+                [summary],
+                metadatas=[
+                    {
+                        "session_id": self.session_id,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                ],
+            )
+
+    def _build_summary_prompt(self, history: List[str]) -> str:
+        return "以下の会話履歴を要約してください(ポイント形式で):\n" + "\n".join(
+            history
+        )
 
     def retrieve(self, session_id: str) -> List[str]:
-        """session_id に基づく履歴の全取得"""
+        """Retrieve all history based on session_id"""
         docs = self._vectorstore.similarity_search(
-            query="",  # 全件取得の代替として空検索を利用（今は仮）
+            query="",
             k=100,
             filter={"session_id": session_id},
         )
@@ -62,32 +121,16 @@ class ChromaMemoryAdapter(BaseMemory):
 
     def clear(self) -> None:
         self._vectorstore.delete_collection()
-        # TODO: セッションID単位で履歴を削除できるようにするとなお良い
+        # TODO: better way to clear the collection
 
-    def get_all_history(self) -> str:
-        docs = self._vectorstore.similarity_search("", k=1000)  # query なしで全部
-        return "\n".join(doc.page_content for doc in docs)
-
-    # def summarize_session(self):
-    #     """
-    #     現在の session_id に紐づく履歴を集めて、まとめて１つの要約として保存
-    #     """
-    #     docs = self._vectorstore.similarity_search(
-    #         query="summary",
-    #         k=20,
-    #         filter={"session_id": self.session_id},
-    #     )
-    #     full_text = "\n".join(doc.page_content for doc in docs)
-
-    #     # TODO 仮実装。あとでLLMを使って要約するようにする
-    #     summary = f"[SUMMARY SNAPSHOT]\n{full_text:300}..."
-    #     print(f"Generated summary: {summary}")  # TODO : remove print in production
-
-    #     # 古い履歴を削除（今は未実装。あとでTTL設計と統合
-    #     self._vectorstore.add_texts(
-    #         texts=[summary],
-    #         metadatas=[{"session_id": self.session_id, "type": "summary"}],
-    #     )
+    def get_all_history(self) -> List[str]:
+        docs = self._vectorstore.similarity_search(
+            "",
+            k=1000,
+            filter={"session_id": self.session_id},
+        )
+        docs_sorted = sorted(docs, key=lambda d: d.metadata.get("timestamp", 0))
+        return [doc.page_content for doc in docs_sorted]
 
 
 class InMemoryAdapter(BaseMemory, BaseMemoryAdapter):
